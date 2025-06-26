@@ -6,7 +6,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { projectName, username } = req.body
+  const { projectName, username, cardColor } = req.body
   if (!projectName || !username) {
     return res.status(400).json({ error: 'Missing projectName or username' })
   }
@@ -61,8 +61,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     }
 
+    // return response: issuerId, collectorId, cardSlug
+
+    const cardSlug = issuerData.cardSlug;
+    const iconUrl = "https://pub-17883891749c4dd484fccf6780697b62.r2.dev/metadataemp/passkey-modified.png";
+
+    // step 3: generate the pass for the issuer
+    // args: cardSlug
+    const passGenerateResponse = await fetch(
+      `${process.env.WALLET_PASS_URL}/merchant-logins/register-card`,
+      {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ cardSlug: cardSlug, cardIcon: iconUrl, cardColor: cardColor }),
+      }
+    )
+
+    const passGenerateData = await passGenerateResponse.json()
+
+    if (!passGenerateResponse.ok) {
+      return res.status(passGenerateResponse.status).json({
+        success: false,
+        message: passGenerateData.message || 'Error generating pass',
+      })
+    }
+
     // Return the successful response from the second call
-    return res.status(200).json({ success: true, ...issuerData })
+    return res.status(200).json({ success: true, ...issuerData, ...passGenerateData })
   } catch (error: any) {
     console.error('Project creation process error:', error)
     return res

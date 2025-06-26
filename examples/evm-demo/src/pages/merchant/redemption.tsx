@@ -31,6 +31,7 @@ export default function MerchantRedemption() {
       body: JSON.stringify({
         projectName: projectName(),
         username: username,
+        cardColor: cardColor(),
       }),
     })
 

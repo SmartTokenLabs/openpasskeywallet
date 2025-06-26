@@ -29,7 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     )
 
-    const data = await response.json()
+    const data = await response.json();
     return res.status(response.status).json(data)
   } catch (error: any) {
     console.error('Merchant login error:', error)
