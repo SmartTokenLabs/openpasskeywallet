@@ -42,13 +42,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       await storeMerchantApiKey(username, projectData.apiKey)
     }
 
+    console.log(`projectData: ${JSON.stringify(projectData)}`)
+
     // Step 2: Create the issuer
     const issuerResponse = await fetch(
       `${process.env.WALLET_PASS_URL}/merchant-logins/create-issuer`,
       {
         method: 'POST',
         headers: headers, // Re-using the same headers
-        body: JSON.stringify({ username: username, cardName: projectName }),
+        body: JSON.stringify({
+          username: username,
+          cardName: projectName,
+          projectId: projectData.id,
+        }),
       }
     )
 
@@ -63,8 +69,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // return response: issuerId, collectorId, cardSlug
 
-    const cardSlug = issuerData.cardSlug;
-    const iconUrl = "https://pub-17883891749c4dd484fccf6780697b62.r2.dev/metadataemp/passkey-modified.png";
+    const cardSlug = issuerData.cardSlug
+    const iconUrl =
+      'https://pub-17883891749c4dd484fccf6780697b62.r2.dev/metadataemp/passkey-modified.png'
 
     // step 3: generate the pass for the issuer
     // args: cardSlug
@@ -73,7 +80,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       {
         method: 'POST',
         headers: headers,
-        body: JSON.stringify({ cardSlug: cardSlug, cardIcon: iconUrl, cardColor: cardColor }),
+        body: JSON.stringify({
+          cardSlug: cardSlug,
+          cardIcon: iconUrl,
+          cardColor: cardColor,
+        }),
       }
     )
 
@@ -87,7 +98,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Return the successful response from the second call
-    return res.status(200).json({ success: true, ...issuerData, ...passGenerateData })
+    return res
+      .status(200)
+      .json({ success: true, ...issuerData, ...passGenerateData })
   } catch (error: any) {
     console.error('Project creation process error:', error)
     return res
