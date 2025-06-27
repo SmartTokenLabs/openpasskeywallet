@@ -1,11 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 //import { createApplePass, servePass } from '../src/passkit'
 import { storePass } from '../src/db'
+import { withCORS } from './cors'
 
 // In-memory map of waiting SSE connections
 const sseClients: Record<string, VercelResponse> = {}
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     // Handle webhook/callback
     const { id, result, signedMessage } = req.body
@@ -59,3 +60,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Method not allowed
   return res.status(405).json({ error: 'Method not allowed' })
 }
+
+export default withCORS(handler)

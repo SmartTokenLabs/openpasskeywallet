@@ -1,7 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { storeMerchantApiKey } from '../src/db'
+import { withCORS } from './cors'
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -108,3 +109,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .json({ success: false, message: 'Internal server error' })
   }
 }
+
+export default withCORS(handler)

@@ -1,9 +1,10 @@
 // /api/jwtToken.ts
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { withCORS } from './cors'
 //import { GoogleAuth } from 'google-auth-library';
 //import jwt from 'jsonwebtoken'
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -51,6 +52,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 }
   */
+
+const passPayload2 = {
+  id: `${cardId}-${ethAddress}`,
+  callbackUrl: `${process.env.ROOT_URL}/api/wallet-pass-callback`,
+  params: {
+    templateId: templateId,
+    platform: 'google',
+    externalId: `${cardId}-${ethAddress}`,
+    pass: {
+      logo: {
+        sourceUri: {
+          uri: 'https://pub-17883891749c4dd484fccf6780697b62.r2.dev/metadataemp/passkey-modified.png',
+        },
+      },
+    },
+  },
+}
 
   // need to design the pass payload here
   const passPayload = {
@@ -161,3 +179,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   res.status(200).json({ token })*/
 }
+
+export default withCORS(handler)
