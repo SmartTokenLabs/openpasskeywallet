@@ -18,6 +18,7 @@ export const Root: Component = () => {
   onMount(async () => {
   const params = searchParams()
   const cardSlug = params.cardSlug
+    console.log(`Slug: ${cardSlug}`)
   if (cardSlug) {
     setCardId(cardSlug)
 
