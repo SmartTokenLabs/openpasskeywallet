@@ -17,7 +17,7 @@ export const Root: Component = () => {
 
   onMount(() => {
     // Get campaign marker from URL
-    const cardSlug = searchParams.cardSlug
+    const cardSlug = searchParams().cardSlug
     if (cardSlug) {
       setCardId(cardSlug)
       //now fetch the card data from the api here: /api/cardData/cardSlug
