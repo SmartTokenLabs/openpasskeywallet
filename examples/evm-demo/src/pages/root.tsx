@@ -15,7 +15,7 @@ export const Root: Component = () => {
   const [campaignMarker, setCampaignMarker] = createSignal('')
   const [cardId, setCardId] = createSignal('')
 
-  onMount(async () => {
+  onMount(() => {
   const params = searchParams()
   const cardSlug = params.cardSlug
     console.log(`Slug: ${cardSlug}`)
@@ -23,9 +23,9 @@ export const Root: Component = () => {
     setCardId(cardSlug)
 
     // ✅ Fetch campaign marker here too
-    const cardData = await fetch(`/api/cardData/${cardSlug}`)
-    const data = await cardData.json()
-    setCampaignMarker(data.cardName)
+    //const cardData = await fetch(`/api/cardData/${cardSlug}`)
+    //const data = await cardData.json()
+    //setCampaignMarker(data.cardName)
   }
 
   initConfig({
