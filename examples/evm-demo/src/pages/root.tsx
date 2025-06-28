@@ -16,23 +16,20 @@ export const Root: Component = () => {
   const [cardId, setCardId] = createSignal('')
 
   onMount(() => {
-    // Get campaign marker from URL
-    const cardSlug = searchParams().cardSlug
-    if (cardSlug) {
-      setCardId(cardSlug)
-      //now fetch the card data from the api here: /api/cardData/cardSlug
-      //cardData is JSON object, we just want to pull the cardName
-      //set the campaignMarker to the cardName
-    }
+  const params = searchParams()
+  const cardSlug = params.cardSlug
+  if (cardSlug) {
+    setCardId(cardSlug)
+    // Optionally, fetch data here
+  }
 
-    // Initialize with fixed network
-    initConfig({
-      network: {
-        chainId: EthSepolia.chainId,
-        name: EthSepolia.name,
-      },
-    })
+  initConfig({
+    network: {
+      chainId: EthSepolia.chainId,
+      name: EthSepolia.name,
+    },
   })
+})
 
   const onConnect = async (wallet: 'JoyID' | 'CoinBase') => {
     setIsLoading(true)
