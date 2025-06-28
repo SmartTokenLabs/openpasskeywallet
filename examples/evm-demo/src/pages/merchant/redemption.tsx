@@ -47,19 +47,19 @@ export default function MerchantRedemption() {
 
     if (data.success) {
       console.log('Project and Issuer created successfully:', data)
-      
+
       // Extract cardSlug from the response
       if (data.cardSlug) {
         setCardSlug(data.cardSlug)
-        
+
         // Create the campaign link
-        const link = `https://openpasskeywallet-ckb-demo.vercel.app/home?campaign=${encodeURIComponent(projectName())}&card_id=${data.cardSlug}`
+        const link = `${process.env.ROOT_URL}?cardSlug=${data.cardSlug}`
         setCampaignLink(link)
-        
+
         // Generate QR code for the link
         const qrCode = generateQRCode(link)
         setQrCodeUrl(qrCode)
-        
+
         alert(
           `Project created! Issuer ID: ${data.issuerId}, Collector ID: ${data.collectorId}, Card Slug: ${data.cardSlug}`
         )
@@ -77,7 +77,7 @@ export default function MerchantRedemption() {
   return (
     <div class="flex flex-col items-center mt-16">
       <h2 class="text-2xl mb-4">Redemption Data</h2>
-      
+
       <form class="flex flex-col items-center mb-8" onSubmit={handleSave}>
         <div class="mb-2">
           Project Name: <span class="font-bold">{projectName()}</span>
@@ -104,15 +104,14 @@ export default function MerchantRedemption() {
       {cardSlug() && (
         <div class="flex flex-col items-center space-y-4">
           <h3 class="text-xl font-semibold">Campaign Link & QR Code</h3>
-          
+
           <div class="text-center">
             <p class="mb-2 font-medium">Campaign Link:</p>
-            <a 
-              href={campaignLink()} 
-              target="_blank" 
+            <a
+              href={campaignLink()}
+              target="_blank"
               rel="noopener noreferrer"
-              class="text-blue-600 hover:text-blue-800 underline break-all"
-            >
+              class="text-blue-600 hover:text-blue-800 underline break-all">
               {campaignLink()}
             </a>
           </div>
@@ -120,16 +119,18 @@ export default function MerchantRedemption() {
           {qrCodeUrl() && (
             <div class="text-center">
               <p class="mb-2 font-medium">QR Code:</p>
-              <img 
-                src={qrCodeUrl()} 
-                alt="Campaign QR Code" 
+              <img
+                src={qrCodeUrl()}
+                alt="Campaign QR Code"
                 class="border border-gray-300 rounded"
               />
             </div>
           )}
 
           <div class="text-sm text-gray-600 mt-4">
-            <p>Card Slug: <span class="font-mono">{cardSlug()}</span></p>
+            <p>
+              Card Slug: <span class="font-mono">{cardSlug()}</span>
+            </p>
           </div>
         </div>
       )}
