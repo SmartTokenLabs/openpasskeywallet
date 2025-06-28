@@ -17,14 +17,12 @@ export const Root: Component = () => {
 
   onMount(() => {
     // Get campaign marker from URL
-    const marker = searchParams.campaign
-    const cardId = searchParams.card_id
-    if (marker) {
-      setCampaignMarker(marker)
-    }
-
-    if (cardId) {
-      setCardId(cardId)
+    const cardSlug = searchParams.cardSlug
+    if (cardSlug) {
+      setCardId(cardSlug)
+      //now fetch the card data from the api here: /api/cardData/cardSlug
+      //cardData is JSON object, we just want to pull the cardName
+      //set the campaignMarker to the cardName
     }
 
     // Initialize with fixed network
@@ -38,6 +36,11 @@ export const Root: Component = () => {
 
   const onConnect = async (wallet: 'JoyID' | 'CoinBase') => {
     setIsLoading(true)
+    const cardData = await fetch(`/api/cardData/${cardId()}`)
+    const data = await cardData.json()
+    setCampaignMarker(data.cardName)
+    console.log(data)
+
     let address = ''
     try {
       if (wallet === 'CoinBase') {
