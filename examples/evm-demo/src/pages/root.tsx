@@ -15,12 +15,16 @@ export const Root: Component = () => {
   const [campaignMarker, setCampaignMarker] = createSignal('')
   const [cardId, setCardId] = createSignal('')
 
-  onMount(() => {
+  onMount(async () => {
   const params = searchParams()
   const cardSlug = params.cardSlug
   if (cardSlug) {
     setCardId(cardSlug)
-    // Optionally, fetch data here
+
+    // ✅ Fetch campaign marker here too
+    const cardData = await fetch(`/api/cardData/${cardSlug}`)
+    const data = await cardData.json()
+    setCampaignMarker(data.cardName)
   }
 
   initConfig({
