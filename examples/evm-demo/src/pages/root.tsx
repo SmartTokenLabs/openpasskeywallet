@@ -20,6 +20,7 @@ export const Root: Component = () => {
     console.log(`Slug: ${cardId}`)
   if (cardId) {
     setCardId(cardId)
+    setCampaignMarker(cardId)
 
     // ✅ Fetch campaign marker here too
     //const cardData = await fetch(`/api/cardData/${cardSlug}`)
@@ -37,7 +38,7 @@ export const Root: Component = () => {
 
   const onConnect = async (wallet: 'JoyID' | 'CoinBase') => {
     setIsLoading(true)
-    const cardData = await fetch(`/api/cardData/${cardId()}`)
+    const cardData = await fetch(`/api/cardData?cardSlug=${cardId()}`)
     const data = await cardData.json()
     setCampaignMarker(data.cardName)
     console.log(data)
