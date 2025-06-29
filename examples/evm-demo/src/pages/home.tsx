@@ -134,7 +134,7 @@ export const Home: Component = () => {
   const { authData } = useAuthData()
   // Get campaign marker from navigation state (passed from root)
   const [searchParams] = useSearchParams()
-  
+
   // State for fetched campaign data
   const [fetchedCampaign, setFetchedCampaign] = createSignal('')
   const [isLoadingCampaign, setIsLoadingCampaign] = createSignal(false)
@@ -169,15 +169,19 @@ export const Home: Component = () => {
   // Function to fetch campaign data from API
   const fetchCampaignData = async (cardSlug: string) => {
     if (!cardSlug) return
-    
+
     setIsLoadingCampaign(true)
     try {
-      const cardData = await fetch(`/api/cardData?cardSlug=${encodeURIComponent(cardSlug)}`)
+      const cardData = await fetch(
+        `/api/cardData?cardSlug=${encodeURIComponent(cardSlug)}`
+      )
       if (cardData.ok) {
         const data = await cardData.json()
         console.log('Fetched card data:', data)
         if (data.cardName) {
           setFetchedCampaign(data.cardName)
+        } else {
+          setFetchedCampaign('No campaign found')
         }
       } else {
         console.error('Failed to fetch card data:', cardData.status)
@@ -214,7 +218,12 @@ export const Home: Component = () => {
     cardId,
     'google'
   )
-  const getiOSPass = generatePass(displayCampaign, getWalletAddress(), cardId, 'apple')
+  const getiOSPass = generatePass(
+    displayCampaign,
+    getWalletAddress(),
+    cardId,
+    'apple'
+  )
 
   const handleClaim = () => {
     const os = getMobileOS()
@@ -253,7 +262,9 @@ export const Home: Component = () => {
           {displayCampaign && (
             <div class="stat-desc mt-2 text-md">
               <span>Campaign: {displayCampaign}</span>
-              {isLoadingCampaign() && <span class="ml-2 text-sm text-gray-500">(Loading...)</span>}
+              {isLoadingCampaign() && (
+                <span class="ml-2 text-sm text-gray-500">(Loading...)</span>
+              )}
             </div>
           )}
         </div>
