@@ -20,7 +20,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
   //fetch card slug using /merchant-logins/get-data/<cardSlug>
   const cardData = await fetch(
-    `${process.env.WALLET_PASS_URL}/merchant-logins/get-data?cardSlug=${cardSlug}`,
+    `${process.env.WALLET_PASS_URL}/merchant-logins/get-data/${cardSlug}`,
     {
       method: 'GET',
       headers: myHeaders,
