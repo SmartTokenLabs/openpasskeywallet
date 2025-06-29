@@ -12,23 +12,15 @@ export const Root: Component = () => {
   const navi = useNavigate()
   const { setAuthData, authData } = useAuthData()
   const [searchParams] = useSearchParams()
-  const [campaignMarker, setCampaignMarker] = createSignal('')
   const [cardId, setCardId] = createSignal('')
 
-  // Get campaign marker from URL - moved outside onMount for reactivity
-  const marker = searchParams.campaign
+  // Get cardId from URL - moved outside onMount for reactivity
   const urlCardId = searchParams.card_id
-  
+
   console.log('Root.tsx - searchParams:', searchParams)
-  console.log('Root.tsx - marker from searchParams.campaign:', marker)
   console.log('Root.tsx - cardId from searchParams.card_id:', urlCardId)
 
   onMount(() => {
-    if (marker) {
-      setCampaignMarker(marker)
-      console.log('Root.tsx - set campaign marker to:', marker)
-    }
-
     if (urlCardId) {
       setCardId(urlCardId)
       console.log('Root.tsx - set cardId to:', urlCardId)
@@ -71,16 +63,13 @@ export const Root: Component = () => {
 
       let url = '/home'
       const params = []
-      if (campaignMarker())
-        params.push(`campaign=${encodeURIComponent(campaignMarker())}`)
       if (cardId()) params.push(`card_id=${encodeURIComponent(cardId())}`)
       if (params.length > 0) url += '?' + params.join('&')
-      
+
       console.log('Root.tsx - Building URL:', url)
-      console.log('Root.tsx - campaignMarker():', campaignMarker())
       console.log('Root.tsx - cardId():', cardId())
       console.log('Root.tsx - params array:', params)
-      
+
       navi(url)
     } catch (error) {
       console.log(error)
@@ -173,9 +162,7 @@ export const Root: Component = () => {
       <section class="justify-center flex-col flex">
         <div class="text-center mb-8">
           <h2 class="text-2xl font-bold">
-            {campaignMarker()
-              ? `Collect ${campaignMarker()} card`
-              : 'Connect Wallet'}
+            Connect Wallet
           </h2>
         </div>
         <button

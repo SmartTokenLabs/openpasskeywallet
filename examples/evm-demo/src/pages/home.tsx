@@ -1,4 +1,4 @@
-import { type Component, Show, onMount } from 'solid-js'
+import { type Component, Show, onMount, createSignal } from 'solid-js'
 import { writeClipboard } from '@solid-primitives/clipboard'
 import { Navigate, useLocation } from '@solidjs/router'
 import toast from 'solid-toast'
@@ -135,49 +135,86 @@ export const Home: Component = () => {
   // Get campaign marker from navigation state (passed from root)
   const [searchParams] = useSearchParams()
   
+  // State for fetched campaign data
+  const [fetchedCampaign, setFetchedCampaign] = createSignal('')
+  const [isLoadingCampaign, setIsLoadingCampaign] = createSignal(false)
+
   // Debug logging
   console.log('Home.tsx - searchParams:', searchParams)
   console.log('Home.tsx - location.search:', location.search)
   console.log('Home.tsx - window.location.search:', window.location.search)
-  
+
   // Try to get params from URL directly as fallback
   const urlParams = new URLSearchParams(window.location.search)
-  console.log('Home.tsx - URLSearchParams campaign:', urlParams.get('campaign'))
   console.log('Home.tsx - URLSearchParams card_id:', urlParams.get('card_id'))
-  
-  const campaign =
-    searchParams.campaign || urlParams.get('campaign') || localStorage.getItem('campaign') || ''
-  const cardId = searchParams.card_id || urlParams.get('card_id') || localStorage.getItem('card_id') || ''
-  
+
+  const cardId =
+    searchParams.card_id ||
+    urlParams.get('card_id') ||
+    localStorage.getItem('card_id') ||
+    ''
+
   // Debug logging
-  console.log('Home.tsx - Campaign from searchParams:', searchParams.campaign)
-  console.log('Home.tsx - Campaign from URLSearchParams:', urlParams.get('campaign'))
-  console.log('Home.tsx - Campaign from localStorage:', localStorage.getItem('campaign'))
-  console.log('Home.tsx - Final campaign value:', campaign)
   console.log('Home.tsx - CardId from searchParams:', searchParams.card_id)
-  console.log('Home.tsx - CardId from URLSearchParams:', urlParams.get('card_id'))
-  console.log('Home.tsx - CardId from localStorage:', localStorage.getItem('card_id'))
+  console.log(
+    'Home.tsx - CardId from URLSearchParams:',
+    urlParams.get('card_id')
+  )
+  console.log(
+    'Home.tsx - CardId from localStorage:',
+    localStorage.getItem('card_id')
+  )
   console.log('Home.tsx - Final cardId value:', cardId)
 
-  if (campaign) {
-    localStorage.setItem('campaign', campaign)
+  // Function to fetch campaign data from API
+  const fetchCampaignData = async (cardSlug: string) => {
+    if (!cardSlug) return
+    
+    setIsLoadingCampaign(true)
+    try {
+      const cardData = await fetch(`/api/cardData?cardSlug=${encodeURIComponent(cardSlug)}`)
+      if (cardData.ok) {
+        const data = await cardData.json()
+        console.log('Fetched card data:', data)
+        if (data.cardName) {
+          setFetchedCampaign(data.cardName)
+        }
+      } else {
+        console.error('Failed to fetch card data:', cardData.status)
+      }
+    } catch (error) {
+      console.error('Error fetching campaign data:', error)
+    } finally {
+      setIsLoadingCampaign(false)
+    }
   }
+
+  // Fetch campaign data when cardId is available
+  onMount(() => {
+    if (cardId) {
+      console.log('Fetching campaign data for cardId:', cardId)
+      fetchCampaignData(cardId)
+    }
+  })
 
   if (cardId) {
     localStorage.setItem('card_id', cardId)
   }
+
+  // Use fetched campaign data only
+  const displayCampaign = fetchedCampaign()
 
   function getWalletAddress() {
     return authData.ethAddress || coinBaseWalletAddresses[0]
   }
 
   const getAndroidPass = generatePass(
-    campaign,
+    displayCampaign,
     getWalletAddress(),
     cardId,
     'google'
   )
-  const getiOSPass = generatePass(campaign, getWalletAddress(), cardId, 'apple')
+  const getiOSPass = generatePass(displayCampaign, getWalletAddress(), cardId, 'apple')
 
   const handleClaim = () => {
     const os = getMobileOS()
@@ -213,9 +250,10 @@ export const Home: Component = () => {
               Copy Address
             </button>
           </div>
-          {campaign && (
+          {displayCampaign && (
             <div class="stat-desc mt-2 text-md">
-              <span>Campaign: {campaign}</span>
+              <span>Campaign: {displayCampaign}</span>
+              {isLoadingCampaign() && <span class="ml-2 text-sm text-gray-500">(Loading...)</span>}
             </div>
           )}
         </div>
