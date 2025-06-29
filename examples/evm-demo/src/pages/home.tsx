@@ -25,6 +25,9 @@ import {
 
 //construct a pass JSON
 
+// Add a signal for pass loading spinner
+const [isLoadingPass, setIsLoadingPass] = createSignal(false)
+
 function generatePass(
   campaign: string,
   ethAddress: string,
@@ -32,54 +35,71 @@ function generatePass(
   platform: string
 ) {
   return async () => {
+    setIsLoadingPass(true)
     try {
       const externalId = `${cardId}-${ethAddress}`
+      let sseResolved = false
 
-      // Start listening for the SSE event BEFORE triggering the backend
-      const evtSource = new EventSource(
-        `/api/wallet-pass-callback?id=${externalId}`
-      )
+      // Promise that resolves when SSE returns fileURL
+      const ssePromise = new Promise((resolve, reject) => {
+        const evtSource = new EventSource(
+          `/api/wallet-pass-callback?id=${externalId}`
+        )
 
-      evtSource.addEventListener('message', (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          console.log('SSE message:', data)
-          if (data.fileURL) {
-            // Redirect to the pass URL
-            window.location.href = data.fileURL
-            evtSource.close() // Clean up
+        evtSource.addEventListener('message', (event) => {
+          try {
+            const data = JSON.parse(event.data)
+            if (data.fileURL) {
+              sseResolved = true
+              evtSource.close()
+              resolve(data.fileURL)
+            }
+          } catch (err) {
+            evtSource.close()
+            reject(err)
           }
-        } catch (err) {
-          console.error('Error parsing SSE data:', err)
-        }
+        })
+
+        evtSource.addEventListener('error', (event) => {
+          if (!sseResolved) {
+            evtSource.close()
+            reject(new Error('SSE error or timeout'))
+          }
+        })
       })
 
-      evtSource.addEventListener('error', (event) => {
-        console.error('SSE error:', event)
-        evtSource.close()
-      })
+      // Timeout promise
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout waiting for pass')), 10000)
+      )
 
       const url =
         platform === 'google' ? '/api/jwtToken' : '/api/generatePkpass'
 
-      // Now trigger the backend to start the pass creation process
+      // Trigger the backend to start the pass creation process
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaign, ethAddress, cardId }),
       })
 
-      if (res.ok) {
-        toast.success('Pass created successfully, please wait', {
-          position: 'bottom-center',
-        })
-      }
       if (!res.ok) {
         toast.error('Error: ' + res.statusText, { position: 'bottom-center' })
+        setIsLoadingPass(false)
         return
       }
-    } catch (err) {
-      toast.error('Network error', { position: 'bottom-center' })
+
+      toast.success('Pass created successfully, please wait', {
+        position: 'bottom-center',
+      })
+
+      // Wait for either SSE or timeout
+      const fileURL = await Promise.race([ssePromise, timeoutPromise])
+      window.location.href = fileURL as string
+    } catch (err: any) {
+      toast.error(err.message || 'Network error', { position: 'bottom-center' })
+    } finally {
+      setIsLoadingPass(false)
     }
   }
 }
@@ -211,6 +231,11 @@ export const Home: Component = () => {
   )
 
   const handleClaim = () => {
+    if (isLoadingPass()) {
+      toast.error('Pass generation in progress, please wait', { position: 'bottom-center' })
+      return;
+    }
+    
     const os = getMobileOS()
     if (os === 'android') {
       getAndroidPass()
@@ -255,8 +280,12 @@ export const Home: Component = () => {
             </div>
           )}
         </div>
-        <button class="btn btn-wide mt-8 btn-primary" onClick={handleClaim}>
-          CLAIM
+        <button class="btn btn-wide mt-8 btn-primary" onClick={handleClaim} disabled={isLoadingPass()}>
+          {isLoadingPass() ? (
+            <span class="flex items-center"><span class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></span>Generating Pass...</span>
+          ) : (
+            'CLAIM'
+          )}
         </button>
         <button
           class="btn btn-wide btn-outline mt-8"

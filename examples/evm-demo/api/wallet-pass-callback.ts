@@ -17,7 +17,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         .json({ error: 'Missing id, result, or signedMessage' })
     }
 
-    await storePass(id, result.id, result.platform, result.fileURL)
+    //await storePass(id, result.id, result.platform, result.fileURL)
+    console.log(`Result: ${JSON.stringify(result)}`)
 
     // If a client is waiting for this id, notify via SSE
     if (sseClients[id]) {

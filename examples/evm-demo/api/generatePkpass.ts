@@ -15,7 +15,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
   //need a database of cardId to templateId
   //const templateId = 'fa19039a-7e3e-45ed-af60-c1b319b054cb'
-  const useTemplateId = templateId || 'fa19039a-7e3e-45ed-af60-c1b319b054cb';
+  const useTemplateId = templateId || 'fa19039a-7e3e-45ed-af60-c1b319b054cb'
 
   const passPayload = {
     id: `${cardId}-${ethAddress}`,
@@ -120,7 +120,29 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     headers: myHeaders,
     redirect: 'follow',
   })
-  const data = await response.json()
+
+  let data
+  const contentType = response.headers.get('content-type')
+  if (contentType && contentType.includes('application/json')) {
+    data = await response.json()
+  } else {
+    data = await response.text() // fallback to text
+    //now parse to JSON
+    try {
+      data = JSON.parse(data)
+    } catch (e) {
+      console.error('Error parsing JSON:', e)
+    }
+  }
+
+  console.log(`Response: ${JSON.stringify(data)}`)
+
+  if (!response.ok) {
+    // Optionally log or throw a more descriptive error
+    console.error('API error:', data)
+    return res.status(response.status).json({ error: data })
+  }
+
   res.status(200).json(data)
 }
 
