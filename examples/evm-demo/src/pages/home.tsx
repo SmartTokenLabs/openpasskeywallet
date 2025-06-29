@@ -1,4 +1,4 @@
-import { type Component, Show, onMount, createSignal } from 'solid-js'
+import { type Component, Show, onMount, createSignal, createMemo } from 'solid-js'
 import { writeClipboard } from '@solid-primitives/clipboard'
 import { Navigate, useLocation } from '@solidjs/router'
 import toast from 'solid-toast'
@@ -169,7 +169,7 @@ export const Home: Component = () => {
   // Function to fetch campaign data from API
   const fetchCampaignData = async (cardSlug: string) => {
     if (!cardSlug) return
-
+    
     setIsLoadingCampaign(true)
     try {
       const cardData = await fetch(
@@ -179,15 +179,20 @@ export const Home: Component = () => {
         const data = await cardData.json()
         console.log('Fetched card data:', data)
         if (data.cardName) {
+          console.log('Setting fetched campaign to:', data.cardName)
           setFetchedCampaign(data.cardName)
+          console.log('Fetched campaign after set:', fetchedCampaign())
         } else {
+          console.log('No cardName found, setting to fallback')
           setFetchedCampaign('No campaign found')
         }
       } else {
         console.error('Failed to fetch card data:', cardData.status)
+        setFetchedCampaign('Error loading campaign')
       }
     } catch (error) {
       console.error('Error fetching campaign data:', error)
+      setFetchedCampaign('Error loading campaign')
     } finally {
       setIsLoadingCampaign(false)
     }
@@ -206,20 +211,29 @@ export const Home: Component = () => {
   }
 
   // Use fetched campaign data only
-  const displayCampaign = fetchedCampaign()
+  const displayCampaign = createMemo(() => {
+    const campaign = fetchedCampaign()
+    console.log('Computed display campaign:', campaign)
+    return campaign
+  })
+  
+  // Debug the display campaign value
+  console.log('Display campaign value:', displayCampaign())
+  console.log('Fetched campaign signal:', fetchedCampaign())
+  console.log('Is loading campaign:', isLoadingCampaign())
 
   function getWalletAddress() {
     return authData.ethAddress || coinBaseWalletAddresses[0]
   }
 
   const getAndroidPass = generatePass(
-    displayCampaign,
+    displayCampaign(),
     getWalletAddress(),
     cardId,
     'google'
   )
   const getiOSPass = generatePass(
-    displayCampaign,
+    displayCampaign(),
     getWalletAddress(),
     cardId,
     'apple'
@@ -259,9 +273,9 @@ export const Home: Component = () => {
               Copy Address
             </button>
           </div>
-          {displayCampaign && (
+          {displayCampaign() && (
             <div class="stat-desc mt-2 text-md">
-              <span>Campaign: {displayCampaign}</span>
+              <span>Campaign: {displayCampaign()}</span>
               {isLoadingCampaign() && (
                 <span class="ml-2 text-sm text-gray-500">(Loading...)</span>
               )}
