@@ -1,4 +1,10 @@
-import { type Component, Show, onMount, createSignal, createMemo } from 'solid-js'
+import {
+  type Component,
+  Show,
+  onMount,
+  createSignal,
+  createMemo,
+} from 'solid-js'
 import { writeClipboard } from '@solid-primitives/clipboard'
 import { Navigate, useLocation } from '@solidjs/router'
 import toast from 'solid-toast'
@@ -119,15 +125,6 @@ function getMobileOS() {
   return 'other'
 }
 
-async function createPassAndListen(
-  campaign: string,
-  ethAddress: string,
-  cardId: string
-) {
-  // Construct the externalId (should match what your backend expects)
-  // Optionally, show a loading indicator while waiting for the SSE event
-}
-
 export const Home: Component = () => {
   const location = useLocation()
   const logout = useLogout()
@@ -139,11 +136,6 @@ export const Home: Component = () => {
   const [fetchedCampaign, setFetchedCampaign] = createSignal('')
   const [isLoadingCampaign, setIsLoadingCampaign] = createSignal(false)
 
-  // Debug logging
-  console.log('Home.tsx - searchParams:', searchParams)
-  console.log('Home.tsx - location.search:', location.search)
-  console.log('Home.tsx - window.location.search:', window.location.search)
-
   // Try to get params from URL directly as fallback
   const urlParams = new URLSearchParams(window.location.search)
   console.log('Home.tsx - URLSearchParams card_id:', urlParams.get('card_id'))
@@ -154,22 +146,10 @@ export const Home: Component = () => {
     localStorage.getItem('card_id') ||
     ''
 
-  // Debug logging
-  console.log('Home.tsx - CardId from searchParams:', searchParams.card_id)
-  console.log(
-    'Home.tsx - CardId from URLSearchParams:',
-    urlParams.get('card_id')
-  )
-  console.log(
-    'Home.tsx - CardId from localStorage:',
-    localStorage.getItem('card_id')
-  )
-  console.log('Home.tsx - Final cardId value:', cardId)
-
   // Function to fetch campaign data from API
   const fetchCampaignData = async (cardSlug: string) => {
     if (!cardSlug) return
-    
+
     setIsLoadingCampaign(true)
     try {
       const cardData = await fetch(
@@ -179,20 +159,16 @@ export const Home: Component = () => {
         const data = await cardData.json()
         console.log('Fetched card data:', data)
         if (data.cardName) {
-          console.log('Setting fetched campaign to:', data.cardName)
           setFetchedCampaign(data.cardName)
           console.log('Fetched campaign after set:', fetchedCampaign())
         } else {
-          console.log('No cardName found, setting to fallback')
           setFetchedCampaign('No campaign found')
         }
       } else {
         console.error('Failed to fetch card data:', cardData.status)
-        setFetchedCampaign('Error loading campaign')
       }
     } catch (error) {
       console.error('Error fetching campaign data:', error)
-      setFetchedCampaign('Error loading campaign')
     } finally {
       setIsLoadingCampaign(false)
     }
@@ -216,11 +192,6 @@ export const Home: Component = () => {
     console.log('Computed display campaign:', campaign)
     return campaign
   })
-  
-  // Debug the display campaign value
-  console.log('Display campaign value:', displayCampaign())
-  console.log('Fetched campaign signal:', fetchedCampaign())
-  console.log('Is loading campaign:', isLoadingCampaign())
 
   function getWalletAddress() {
     return authData.ethAddress || coinBaseWalletAddresses[0]
@@ -277,7 +248,9 @@ export const Home: Component = () => {
             <div class="stat-desc mt-2 text-md">
               <span>Campaign: {displayCampaign()}</span>
               {isLoadingCampaign() && (
-                <span class="ml-2 text-sm text-gray-500">(Loading...)</span>
+                <span class="ml-2 inline-block">
+                  <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                </span>
               )}
             </div>
           )}

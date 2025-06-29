@@ -7,6 +7,7 @@ export default function MerchantRedemption() {
   const [cardSlug, setCardSlug] = createSignal('')
   const [qrCodeUrl, setQrCodeUrl] = createSignal('')
   const [campaignLink, setCampaignLink] = createSignal('')
+  const [isGeneratingQR, setIsGeneratingQR] = createSignal(false)
 
   onMount(() => {
     if (typeof window !== 'undefined') {
@@ -33,6 +34,8 @@ export default function MerchantRedemption() {
       return
     }
 
+    setIsGeneratingQR(true)
+
     const res = await fetch('/api/merchant-project-create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -53,7 +56,7 @@ export default function MerchantRedemption() {
         setCardSlug(data.cardSlug)
 
         // Create the campaign link
-        const link = `${process.env.ROOT_URL}?cardSlug=${data.cardSlug}`
+        const link = `${process.env.ROOT_URL}?card_id=${data.cardSlug}`
         setCampaignLink(link)
 
         // Generate QR code for the link
@@ -72,6 +75,8 @@ export default function MerchantRedemption() {
       console.error('Failed to create project:', data.message)
       alert(`Error: ${data.message}`)
     }
+
+    setIsGeneratingQR(false)
   }
 
   return (
@@ -124,6 +129,16 @@ export default function MerchantRedemption() {
                 alt="Campaign QR Code"
                 class="border border-gray-300 rounded"
               />
+            </div>
+          )}
+
+          {isGeneratingQR() && !qrCodeUrl() && (
+            <div class="text-center">
+              <p class="mb-2 font-medium">QR Code:</p>
+              <div class="flex justify-center items-center">
+                <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+              </div>
+              <p class="text-sm text-gray-500 mt-2">Generating QR Code...</p>
             </div>
           )}
 
