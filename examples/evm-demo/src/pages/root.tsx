@@ -16,33 +16,28 @@ export const Root: Component = () => {
   const [cardId, setCardId] = createSignal('')
 
   onMount(() => {
-  const cardId = searchParams.card_id
-    console.log(`Slug: ${cardId}`)
-  if (cardId) {
-    setCardId(cardId)
-    setCampaignMarker(cardId)
+    // Get campaign marker from URL
+    const marker = searchParams.campaign
+    const cardId = searchParams.card_id
+    if (marker) {
+      setCampaignMarker(marker)
+    }
 
-    // ✅ Fetch campaign marker here too
-    //const cardData = await fetch(`/api/cardData/${cardSlug}`)
-    //const data = await cardData.json()
-    //setCampaignMarker(data.cardName)
-  }
+    if (cardId) {
+      setCardId(cardId)
+    }
 
-  initConfig({
-    network: {
-      chainId: EthSepolia.chainId,
-      name: EthSepolia.name,
-    },
+    // Initialize with fixed network
+    initConfig({
+      network: {
+        chainId: EthSepolia.chainId,
+        name: EthSepolia.name,
+      },
+    })
   })
-})
 
   const onConnect = async (wallet: 'JoyID' | 'CoinBase') => {
     setIsLoading(true)
-    const cardData = await fetch(`/api/cardData?cardSlug=${cardId()}`)
-    const data = await cardData.json()
-    setCampaignMarker(data.cardName)
-    console.log(data)
-
     let address = ''
     try {
       if (wallet === 'CoinBase') {
