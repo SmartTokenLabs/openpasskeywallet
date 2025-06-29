@@ -11,12 +11,54 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
   // this function now just calls an API service to create a pass
   // the remote API will call the wallet-pass-callback API to store the pass
-  const { campaign, ethAddress, cardId } = req.body
+  const { campaign, ethAddress, cardId, templateId } = req.body
 
   //need a database of cardId to templateId
-  const templateId = 'fa19039a-7e3e-45ed-af60-c1b319b054cb'
+  //const templateId = 'fa19039a-7e3e-45ed-af60-c1b319b054cb'
+  const useTemplateId = templateId || 'fa19039a-7e3e-45ed-af60-c1b319b054cb';
 
   const passPayload = {
+    id: `${cardId}-${ethAddress}`,
+    callbackUrl: `${process.env.ROOT_URL}/api/wallet-pass-callback`,
+    params: {
+      templateId: useTemplateId,
+      platform: 'apple',
+      externalId: `${cardId}-${ethAddress}`,
+      pass: {
+        description: `${campaign}`,
+        backFields: [
+          {
+            key: 'website',
+            label: 'Link',
+            attributedValue: 'Website',
+            value: `${process.env.ROOT_URL}/home?card_id=${cardId}`,
+          },
+        ],
+        secondaryFields: [
+          {
+            key: 'points',
+            textAlignment: 'PKTextAlignmentLeft',
+            label: 'Points',
+            value: '0',
+          },
+        ],
+        auxiliaryFields: [
+          {
+            key: 'tier',
+            label: 'Tier',
+            value: 'Appreciator',
+          },
+          {
+            key: 'userAddr',
+            label: 'Member Address',
+            value: `${ethAddress}`,
+          },
+        ],
+      },
+    },
+  }
+
+  /*const passPayload = {
     id: `${cardId}-${ethAddress}`,
     callbackUrl: `${process.env.ROOT_URL}/api/wallet-pass-callback`,
     params: {
@@ -61,7 +103,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         ],
       },
     },
-  }
+  }*/
 
   console.log(`Pass Payload: ${JSON.stringify(passPayload)}`)
 

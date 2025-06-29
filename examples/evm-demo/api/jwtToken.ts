@@ -15,6 +15,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   const { campaign, ethAddress, cardId } = req.body
 
   //need a database of cardId to templateId
+  //TODO: pull this from API, can be supplied to this API from the frontend, so, would need to be given by the cardDetails API
   const templateId = 'fa19039a-7e3e-45ed-af60-c1b319b054cb'
 
   const passPayload = {
