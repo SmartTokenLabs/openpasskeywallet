@@ -134,9 +134,30 @@ export const Home: Component = () => {
   const { authData } = useAuthData()
   // Get campaign marker from navigation state (passed from root)
   const [searchParams] = useSearchParams()
+  
+  // Debug logging
+  console.log('Home.tsx - searchParams:', searchParams)
+  console.log('Home.tsx - location.search:', location.search)
+  console.log('Home.tsx - window.location.search:', window.location.search)
+  
+  // Try to get params from URL directly as fallback
+  const urlParams = new URLSearchParams(window.location.search)
+  console.log('Home.tsx - URLSearchParams campaign:', urlParams.get('campaign'))
+  console.log('Home.tsx - URLSearchParams card_id:', urlParams.get('card_id'))
+  
   const campaign =
-    searchParams.campaign || localStorage.getItem('campaign') || ''
-  const cardId = searchParams.card_id || localStorage.getItem('card_id') || ''
+    searchParams.campaign || urlParams.get('campaign') || localStorage.getItem('campaign') || ''
+  const cardId = searchParams.card_id || urlParams.get('card_id') || localStorage.getItem('card_id') || ''
+  
+  // Debug logging
+  console.log('Home.tsx - Campaign from searchParams:', searchParams.campaign)
+  console.log('Home.tsx - Campaign from URLSearchParams:', urlParams.get('campaign'))
+  console.log('Home.tsx - Campaign from localStorage:', localStorage.getItem('campaign'))
+  console.log('Home.tsx - Final campaign value:', campaign)
+  console.log('Home.tsx - CardId from searchParams:', searchParams.card_id)
+  console.log('Home.tsx - CardId from URLSearchParams:', urlParams.get('card_id'))
+  console.log('Home.tsx - CardId from localStorage:', localStorage.getItem('card_id'))
+  console.log('Home.tsx - Final cardId value:', cardId)
 
   if (campaign) {
     localStorage.setItem('campaign', campaign)

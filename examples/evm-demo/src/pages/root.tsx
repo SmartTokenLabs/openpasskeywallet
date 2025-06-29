@@ -15,16 +15,23 @@ export const Root: Component = () => {
   const [campaignMarker, setCampaignMarker] = createSignal('')
   const [cardId, setCardId] = createSignal('')
 
+  // Get campaign marker from URL - moved outside onMount for reactivity
+  const marker = searchParams.campaign
+  const urlCardId = searchParams.card_id
+  
+  console.log('Root.tsx - searchParams:', searchParams)
+  console.log('Root.tsx - marker from searchParams.campaign:', marker)
+  console.log('Root.tsx - cardId from searchParams.card_id:', urlCardId)
+
   onMount(() => {
-    // Get campaign marker from URL
-    const marker = searchParams.campaign
-    const cardId = searchParams.card_id
     if (marker) {
       setCampaignMarker(marker)
+      console.log('Root.tsx - set campaign marker to:', marker)
     }
 
-    if (cardId) {
-      setCardId(cardId)
+    if (urlCardId) {
+      setCardId(urlCardId)
+      console.log('Root.tsx - set cardId to:', urlCardId)
     }
 
     // Initialize with fixed network
@@ -68,6 +75,12 @@ export const Root: Component = () => {
         params.push(`campaign=${encodeURIComponent(campaignMarker())}`)
       if (cardId()) params.push(`card_id=${encodeURIComponent(cardId())}`)
       if (params.length > 0) url += '?' + params.join('&')
+      
+      console.log('Root.tsx - Building URL:', url)
+      console.log('Root.tsx - campaignMarker():', campaignMarker())
+      console.log('Root.tsx - cardId():', cardId())
+      console.log('Root.tsx - params array:', params)
+      
       navi(url)
     } catch (error) {
       console.log(error)
