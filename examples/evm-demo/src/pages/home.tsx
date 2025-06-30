@@ -12,7 +12,7 @@ import { useAuthData } from '../hooks/localStorage'
 import { truncateMiddle } from '../utils'
 import { useSearchParams } from '@solidjs/router'
 import { passkeyWalletAddress, setPasskeyWalletAddress } from '../passkey/store'
-import { cardId, updateCardIdAndCampaignFromUrl } from '../card/store'
+import { cardId, updateCardId } from '../card/store'
 
 // Dont need that, QR code can be read by the user. QR code contains card_id and campaign
 
@@ -70,7 +70,7 @@ function generatePass(
 
       // Timeout promise
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout waiting for pass')), 10000)
+        setTimeout(() => reject(new Error('Timeout waiting for pass')), 10_000)
       )
 
       const url =
@@ -186,7 +186,7 @@ export const Home: Component = () => {
 
   // Fetch campaign data when cardId is available
   onMount(() => {
-    updateCardIdAndCampaignFromUrl(searchParams)
+    updateCardId(searchParams)
     if (cardId()) {
       console.log('Fetching campaign data for cardId:', cardId())
       fetchCampaignData(cardId())

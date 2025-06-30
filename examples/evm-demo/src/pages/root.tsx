@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useSearchParams } from '@solidjs/router'
 import toast from 'solid-toast'
 import { connectSmartWalletWithPasskey } from '../passkey/webauthn'
 import { passkeyWalletAddress, setPasskeyWalletAddress } from '../passkey/store'
-import { cardId, updateCardIdAndCampaignFromUrl } from '../card/store'
+import { cardId, updateCardId } from '../card/store'
 
 export const Root: Component = () => {
   const [connectWalletLoading, setConnectWalletLoading] = createSignal(false)
@@ -12,7 +12,7 @@ export const Root: Component = () => {
   const [searchParams] = useSearchParams()
 
   onMount(() => {
-    updateCardIdAndCampaignFromUrl(searchParams)
+    updateCardId(searchParams)
   })
 
   function getMobileOS() {
