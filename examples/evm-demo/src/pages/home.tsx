@@ -78,7 +78,7 @@ function generatePass(
           'https://openpasskeywallet-ckb-demo.vercel.app') +
         (platform === 'google' ? '/api/jwtToken' : '/api/generatePkpass')
 
-        // Trigger the backend to start the pass creation process
+      // Trigger the backend to start the pass creation process
 
       const res = await fetch(url, {
         method: 'POST',
@@ -150,23 +150,7 @@ function getMobileOS() {
 
 export const Home: Component = () => {
   // Get campaign marker from navigation state (passed from root)
-
-  onMount(() => {
-    updateCardIdAndCampaignFromUrl(searchParams)
-  })
-
-  const getAndroidPass = generatePass(
-    displayCampaign(),
-    passkeyWalletAddress.address,
-    cardId,
-    'google'
-  )
-  const getiOSPass = generatePass(
-    displayCampaign(),
-    passkeyWalletAddress.address,
-    cardId,
-    'apple'
-  )
+  const [searchParams] = useSearchParams()
 
   // State for fetched campaign data
   const [fetchedCampaign, setFetchedCampaign] = createSignal('')
@@ -202,6 +186,7 @@ export const Home: Component = () => {
 
   // Fetch campaign data when cardId is available
   onMount(() => {
+    updateCardIdAndCampaignFromUrl(searchParams)
     if (cardId()) {
       console.log('Fetching campaign data for cardId:', cardId())
       fetchCampaignData(cardId())
@@ -215,13 +200,27 @@ export const Home: Component = () => {
     return campaign
   })
 
+  const getAndroidPass = generatePass(
+    displayCampaign(),
+    passkeyWalletAddress.address,
+    cardId(),
+    'google'
+  )
+  const getiOSPass = generatePass(
+    displayCampaign(),
+    passkeyWalletAddress.address,
+    cardId(),
+    'apple'
+  )
 
   const handleClaim = () => {
     if (isLoadingPass()) {
-      toast.error('Pass generation in progress, please wait', { position: 'bottom-center' })
-      return;
+      toast.error('Pass generation in progress, please wait', {
+        position: 'bottom-center',
+      })
+      return
     }
-    
+
     const os = getMobileOS()
     if (os === 'android') {
       getAndroidPass()
@@ -257,7 +256,6 @@ export const Home: Component = () => {
           </div>
           {displayCampaign() && (
             <div class="stat-desc mt-2 text-md">
-
               <span>Campaign: {displayCampaign()}</span>
               {isLoadingCampaign() && (
                 <span class="ml-2 inline-block">
@@ -267,9 +265,15 @@ export const Home: Component = () => {
             </div>
           )}
         </div>
-        <button class="btn btn-wide mt-8 btn-primary" onClick={handleClaim} disabled={isLoadingPass()}>
+        <button
+          class="btn btn-wide mt-8 btn-primary"
+          onClick={handleClaim}
+          disabled={isLoadingPass()}>
           {isLoadingPass() ? (
-            <span class="flex items-center"><span class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></span>Generating Pass...</span>
+            <span class="flex items-center">
+              <span class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></span>
+              Generating Pass...
+            </span>
           ) : (
             'CLAIM'
           )}

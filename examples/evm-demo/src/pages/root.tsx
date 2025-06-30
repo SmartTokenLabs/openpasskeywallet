@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useSearchParams } from '@solidjs/router'
 import toast from 'solid-toast'
 import { connectSmartWalletWithPasskey } from '../passkey/webauthn'
 import { passkeyWalletAddress, setPasskeyWalletAddress } from '../passkey/store'
-import { cardId, campaign, updateCardIdAndCampaignFromUrl } from '../card/store'
+import { cardId, updateCardIdAndCampaignFromUrl } from '../card/store'
 
 export const Root: Component = () => {
   const [connectWalletLoading, setConnectWalletLoading] = createSignal(false)
@@ -15,12 +15,6 @@ export const Root: Component = () => {
     updateCardIdAndCampaignFromUrl(searchParams)
   })
 
-  // Test params
-  const testCampaign = 'Open Passkey'
-  const testEthAddress = '0x1234567890abcdef1234567890abcdef12345670'
-  const testCardId = 'open_passkey'
-
-
   function getMobileOS() {
     const userAgent = window.navigator.userAgent || ''
     if (/android/i.test(userAgent)) {
@@ -31,7 +25,6 @@ export const Root: Component = () => {
     }
     return 'other'
   }
-
 
   // Test params
   const testEthAddress = '0xCbb550c056Dd9092B20aE890EE27b987a1e46dfB'
@@ -48,7 +41,7 @@ export const Root: Component = () => {
         const res = await fetch('/api/jwtToken', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ campaign, ethAddress, cardId: cardId() }),
+          body: JSON.stringify({ campaign, ethAddress, cardId }),
         })
         const data = await res.json()
         if (res.ok) {
@@ -83,7 +76,7 @@ export const Root: Component = () => {
       }
       addField('campaign', campaign)
       addField('ethAddress', ethAddress)
-      addField('cardId', cardId())
+      addField('cardId', cardId)
 
       document.body.append(form)
       form.submit()
@@ -189,15 +182,15 @@ export const Root: Component = () => {
 
   return (
     <Show
-      when={!passkeyWalletAddress.address || !campaign() || !cardId()}
+      when={!passkeyWalletAddress.address || !cardId()}
       fallback={<Navigate href="/home" />}>
       <section class="justify-center flex-col flex">
-        {campaign() && cardId() ? (
+        {cardId() ? (
           <>
             <div class="text-center mb-8">
               <h2 class="text-2xl font-bold">
-                {campaign()
-                  ? `Collect ${campaign()} card of ${cardId()}`
+                {campaign
+                  ? `Collect ${campaign} card of ${cardId()}`
                   : 'Connect Wallet'}
               </h2>
             </div>
@@ -221,7 +214,7 @@ export const Root: Component = () => {
             </h2>
           </div>
         )}
- <button class="btn btn-wide mt-8 btn-error" onClick={handleTestPass}>
+        <button class="btn btn-wide mt-8 btn-error" onClick={handleTestPass}>
           Do Not Press!
         </button>
       </section>
