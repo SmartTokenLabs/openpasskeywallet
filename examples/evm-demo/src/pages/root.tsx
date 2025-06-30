@@ -180,6 +180,12 @@ export const Root: Component = () => {
     }
   }
 
+  /*
+          <button class="btn btn-wide mt-8 btn-error" onClick={handleTestPass}>
+          Do Not Press!
+        </button>
+        */
+
   return (
     <Show
       when={!passkeyWalletAddress.address || !cardId()}
@@ -214,9 +220,6 @@ export const Root: Component = () => {
             </h2>
           </div>
         )}
-        <button class="btn btn-wide mt-8 btn-error" onClick={handleTestPass}>
-          Do Not Press!
-        </button>
       </section>
     </Show>
   )
