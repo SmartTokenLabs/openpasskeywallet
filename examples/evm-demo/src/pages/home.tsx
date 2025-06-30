@@ -145,7 +145,7 @@ function getMobileOS() {
   if (/iPad|iPhone|iPod/.test(userAgent)) {
     return 'ios'
   }
-  return 'other'
+  return userAgent
 }
 
 export const Home: Component = () => {
@@ -227,7 +227,7 @@ export const Home: Component = () => {
     } else if (os === 'ios') {
       getiOSPass()
     } else {
-      toast.error('Unsupported device', { position: 'bottom-center' })
+      toast.error(`Unsupported device: ${os}`, { position: 'bottom-center' })
     }
   }
 
