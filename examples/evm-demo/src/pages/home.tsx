@@ -83,7 +83,7 @@ function generatePass(
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campaign, ethAddress, cardId }),
+        body: JSON.stringify({ campaign, ethAddress, cardId, baseUrl: window.location.origin }),
       })
 
       if (!res.ok) {
@@ -104,36 +104,6 @@ function generatePass(
     } finally {
       setIsLoadingPass(false)
     }
-  }
-}
-
-function useDownloadPkpass(
-  campaign: string,
-  ethAddress: string,
-  cardId: string
-) {
-  return async () => {
-    // For iOS/Safari, do a direct POST navigation
-    const form = document.createElement('form')
-    form.method = 'POST'
-    form.action = '/api/generatePkpass'
-    form.style.display = 'none'
-
-    const addField = (name: string, value: string) => {
-      const input = document.createElement('input')
-      input.type = 'hidden'
-      input.name = name
-      input.value = value
-      form.append(input)
-    }
-    addField('campaign', campaign)
-    addField('ethAddress', ethAddress)
-    addField('cardId', cardId)
-
-    document.body.append(form)
-    form.submit()
-    form.remove()
-    return
   }
 }
 
