@@ -81,7 +81,7 @@ function arrayBufferToBase64Url(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer)
   let binary = ''
   for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i])
+    binary += String.fromCodePoint(bytes[i])
   }
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
@@ -134,7 +134,7 @@ async function signWithPasskey(
           },
         ],
         userVerification: 'required',
-        timeout: 60000,
+        timeout: 60_000,
       },
     })
 
@@ -215,9 +215,9 @@ export async function connectSmartWalletWithPasskey(
       rp: {
         name: 'NFC Passkey Demo',
         id:
-          typeof window !== 'undefined'
-            ? window.location.hostname
-            : 'localhost',
+          typeof window === 'undefined'
+            ? 'localhost'
+            : window.location.hostname,
       },
       user: {
         id: crypto.getRandomValues(new Uint8Array(16)),
@@ -231,7 +231,7 @@ export async function connectSmartWalletWithPasskey(
         authenticatorAttachment: 'platform',
         userVerification: 'required',
       },
-      timeout: 60000,
+      timeout: 60_000,
     },
   }
   // Create passkey
@@ -327,9 +327,9 @@ export async function connectSmartWalletWithPasskey(
     console.log('🔄 Falling back to predicted address without deployment...')
 
     const owners = [
-      `0x${Array.from(passkey.publicKey.x)
+      `0x${[...passkey.publicKey.x]
         .map((b) => b.toString(16).padStart(2, '0'))
-        .join('')}${Array.from(passkey.publicKey.y)
+        .join('')}${[...passkey.publicKey.y]
         .map((b) => b.toString(16).padStart(2, '0'))
         .join('')}` as `0x${string}`,
     ]
@@ -373,9 +373,9 @@ export async function getEthBalance(address: string): Promise<string> {
 // Deploy smart wallet if not already deployed
 async function deploySmartWallet(walletInfo: SmartWalletInfo): Promise<string> {
   const owners = [
-    `0x${Array.from(walletInfo.passkey.publicKey.x)
+    `0x${[...walletInfo.passkey.publicKey.x]
       .map((b) => b.toString(16).padStart(2, '0'))
-      .join('')}${Array.from(walletInfo.passkey.publicKey.y)
+      .join('')}${[...walletInfo.passkey.publicKey.y]
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('')}` as `0x${string}`,
   ]
@@ -401,7 +401,7 @@ async function deploySmartWallet(walletInfo: SmartWalletInfo): Promise<string> {
     )
 
     // Return mock transaction hash for deployment since we can't actually deploy without gas
-    const randomBytes = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+    const randomBytes = [...crypto.getRandomValues(new Uint8Array(32))]
     const hexString = randomBytes
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('')
@@ -498,7 +498,7 @@ export async function sendEthTransaction(
         to: walletInfo.address as `0x${string}`,
         value: 0n, // No ETH sent to the smart wallet itself
         data: smartWalletTxData,
-        gas: 100000n, // Reasonable gas limit for simple transfers
+        gas: 100_000n, // Reasonable gas limit for simple transfers
       }
 
       // Estimate gas for the smart wallet execution
@@ -539,9 +539,7 @@ export async function sendEthTransaction(
         console.log('   • Meta-transaction providers')
 
         // Return a realistic transaction hash
-        const randomBytes = Array.from(
-          crypto.getRandomValues(new Uint8Array(32))
-        )
+        const randomBytes = [...crypto.getRandomValues(new Uint8Array(32))]
         const hexString = randomBytes
           .map((b) => b.toString(16).padStart(2, '0'))
           .join('')
@@ -563,9 +561,7 @@ export async function sendEthTransaction(
         console.log('• Network connectivity issues')
 
         // Still return success since passkey signing worked
-        const randomBytes = Array.from(
-          crypto.getRandomValues(new Uint8Array(32))
-        )
+        const randomBytes = [...crypto.getRandomValues(new Uint8Array(32))]
         const hexString = randomBytes
           .map((b) => b.toString(16).padStart(2, '0'))
           .join('')
@@ -600,7 +596,7 @@ function simulateTransaction(
   )
 
   // Return a mock transaction hash
-  const randomBytes = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+  const randomBytes = [...crypto.getRandomValues(new Uint8Array(32))]
   const hexString = randomBytes
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
@@ -621,9 +617,10 @@ export async function createRealCoinbaseSmartAccount(
     // but ensure that we actually authenticate with the passkey first
 
     // Generate a deterministic private key from passkey data for demo purposes
-    const passkeyData = Array.from(passkeyCredential.publicKey.x).concat(
-      Array.from(passkeyCredential.publicKey.y)
-    )
+    const passkeyData = [
+      ...passkeyCredential.publicKey.x,
+      ...passkeyCredential.publicKey.y,
+    ]
 
     // Create a more robust hash using crypto.subtle if available, otherwise fallback
     let privateKeyBytes: Uint8Array
@@ -649,9 +646,7 @@ export async function createRealCoinbaseSmartAccount(
 
     const privateKeyHex =
       '0x' +
-      Array.from(privateKeyBytes)
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('')
+      [...privateKeyBytes].map((b) => b.toString(16).padStart(2, '0')).join('')
     const owner = privateKeyToAccount(privateKeyHex as `0x${string}`)
 
     console.log('🔑 Generated deterministic owner from passkey:', owner.address)
@@ -700,7 +695,7 @@ export async function sendRealEthTransaction(
     }
 
     console.log('🚀 Starting real transaction with passkey authentication...')
-    console.log('🌐 Using Coinbase RPC:', RPC_URL.replace(/\/[^\/]+$/, '/***'))
+    console.log('🌐 Using Coinbase RPC:', RPC_URL.replace(/\/[^/]+$/, '/***'))
 
     // First, we need to authenticate with the passkey and prepare the transaction
     // This is similar to the demo transaction but will actually submit to blockchain
@@ -813,7 +808,7 @@ export async function sendRealEthTransaction(
       )
 
       // Return a demo transaction hash to show the flow worked
-      const randomBytes = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+      const randomBytes = [...crypto.getRandomValues(new Uint8Array(32))]
       const demoTxHash =
         '0x' + randomBytes.map((b) => b.toString(16).padStart(2, '0')).join('')
 
