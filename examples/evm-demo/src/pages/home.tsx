@@ -13,6 +13,7 @@ import { truncateMiddle } from '../utils'
 import { useSearchParams } from '@solidjs/router'
 import { passkeyWalletAddress, setPasskeyWalletAddress } from '../passkey/store'
 import { cardId, updateCardId } from '../card/store'
+import { BACKEND_URL } from '../constant'
 
 // Dont need that, QR code can be read by the user. QR code contains card_id and campaign
 
@@ -43,7 +44,7 @@ function generatePass(
       // Promise that resolves when SSE returns fileURL
       const ssePromise = new Promise((resolve, reject) => {
         const evtSource = new EventSource(
-          `/api/wallet-pass-callback?id=${externalId}`
+          BACKEND_URL + `/api/wallet-pass-callback?id=${externalId}`
         )
 
         evtSource.addEventListener('message', (event) => {
@@ -74,8 +75,7 @@ function generatePass(
       )
 
       const url =
-        (import.meta.env.VITE_PUBLIC_BACKEND_ROOT ||
-          'https://openpasskeywallet-ckb-demo.vercel.app') +
+        BACKEND_URL +
         (platform === 'google' ? '/api/jwtToken' : '/api/generatePkpass')
 
       // Trigger the backend to start the pass creation process
@@ -83,7 +83,7 @@ function generatePass(
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campaign, ethAddress, cardId, baseUrl: window.location.origin }),
+        body: JSON.stringify({ ethAddress, cardId, baseUrl: BACKEND_URL }),
       })
 
       if (!res.ok) {
@@ -133,7 +133,7 @@ export const Home: Component = () => {
     setIsLoadingCampaign(true)
     try {
       const cardData = await fetch(
-        `/api/cardData?cardSlug=${encodeURIComponent(cardSlug)}`
+        BACKEND_URL + `/api/cardData?cardSlug=${encodeURIComponent(cardSlug)}`
       )
       if (cardData.ok) {
         const data = await cardData.json()

@@ -4,6 +4,7 @@ import toast from 'solid-toast'
 import { connectSmartWalletWithPasskey } from '../passkey/webauthn'
 import { passkeyWalletAddress, setPasskeyWalletAddress } from '../passkey/store'
 import { cardId, updateCardId } from '../card/store'
+import { BACKEND_URL } from '../constant'
 
 export const Root: Component = () => {
   const [connectWalletLoading, setConnectWalletLoading] = createSignal(false)
@@ -107,7 +108,7 @@ export const Root: Component = () => {
 
         // Start listening for the SSE event BEFORE triggering the backend
         const evtSource = new EventSource(
-          `/api/wallet-pass-callback?id=${externalId}`
+          BACKEND_URL + `/api/wallet-pass-callback?id=${externalId}`
         )
 
         evtSource.addEventListener('message', (event) => {
@@ -130,7 +131,8 @@ export const Root: Component = () => {
         })
 
         const url =
-          platform === 'google' ? '/api/jwtToken' : '/api/generatePkpass'
+          BACKEND_URL +
+          (platform === 'google' ? '/api/jwtToken' : '/api/generatePkpass')
 
         console.log(`URL: ${url}`)
 
@@ -138,7 +140,7 @@ export const Root: Component = () => {
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ campaign, ethAddress, cardId }),
+          body: JSON.stringify({ ethAddress, cardId, baseUrl: BACKEND_URL }),
         })
 
         if (res.ok) {
