@@ -26,6 +26,7 @@
     "@solid-primitives/storage": "^2.1.1",
     "@solidjs/router": "0.8.2",
     "@tanstack/solid-query": "^4.29.1",
+    "@vercel/node": "^3.0.0",
     "daisyui": "^2.51.5",
     "ethers": "5.7.0",
     "passkit-generator": "^3.4.0",
