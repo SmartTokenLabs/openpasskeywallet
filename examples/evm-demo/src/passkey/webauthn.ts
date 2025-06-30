@@ -229,7 +229,10 @@ export async function connectSmartWalletWithPasskey(
       ],
       authenticatorSelection: {
         authenticatorAttachment: 'platform',
-        userVerification: 'required',
+        // userVerification: 'required',
+        userVerification: 'preferred',
+        residentKey: 'preferred', // Important for passkeys
+        requireResidentKey: false, // For broader compatibility
       },
       timeout: 60_000,
     },
