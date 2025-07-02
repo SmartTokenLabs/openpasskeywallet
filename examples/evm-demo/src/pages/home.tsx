@@ -8,21 +8,11 @@ import {
 import { writeClipboard } from '@solid-primitives/clipboard'
 import { Navigate, useLocation } from '@solidjs/router'
 import toast from 'solid-toast'
-import { useAuthData } from '../hooks/localStorage'
 import { truncateMiddle } from '../utils'
 import { useSearchParams } from '@solidjs/router'
 import { passkeyWalletAddress, setPasskeyWalletAddress } from '../passkey/store'
 import { cardId, updateCardId } from '../card/store'
 import { BACKEND_URL } from '../constant'
-
-// Dont need that, QR code can be read by the user. QR code contains card_id and campaign
-
-// import { createQuery } from '@tanstack/solid-query'
-// import { formatEther } from 'ethers/lib/utils'
-// import { useProvider } from '../hooks/provider'
-// import { Chains } from '../chains'
-// import { produce } from 'solid-js/store'
-// import { type connectCallback } from '@joyid/evm'
 
 //construct a pass JSON
 
