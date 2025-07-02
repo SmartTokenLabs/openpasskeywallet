@@ -4,16 +4,14 @@ import toast from 'solid-toast'
 import { connectSmartWalletWithPasskey } from '../passkey/webauthn'
 import { passkeyWalletAddress, setPasskeyWalletAddress } from '../passkey/store'
 import { cardId, updateCardId, updateCampaign, campaign } from '../card/store'
-import { BACKEND_URL } from '../constant'
 
 export const Root: Component = () => {
   const [connectWalletLoading, setConnectWalletLoading] = createSignal(false)
   const [newWalletLoading, setNewWalletIsLoading] = createSignal(false)
   const navi = useNavigate()
   const [searchParams] = useSearchParams()
-  const [campaign, setCampaign] = createSignal('')
 
-  onMount(async () => {
+  onMount(() => {
     console.log('searchParams', searchParams)
     updateCardId(searchParams)
     updateCampaign(searchParams)
@@ -43,12 +41,12 @@ export const Root: Component = () => {
       when={!passkeyWalletAddress.address || !cardId()}
       fallback={<Navigate href="/home" />}>
       <section class="justify-center flex-col flex">
-        {cardId() ? (
+        {campaign() ? (
           <>
             <div class="text-center mb-8">
               <h2 class="text-2xl font-bold">
                 {campaign()
-                  ? `Collect ${campaign()} card of ${cardId()}`
+                  ? `Collect ${campaign()} card}`
                   : 'Connect Wallet'}
               </h2>
             </div>
