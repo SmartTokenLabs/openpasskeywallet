@@ -14,6 +14,7 @@ export const Root: Component = () => {
   const [campaign, setCampaign] = createSignal('')
 
   onMount(async () => {
+    console.log('searchParams', searchParams)
     updateCardId(searchParams)
     updateCampaign(searchParams)
   })
