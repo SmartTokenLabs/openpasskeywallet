@@ -1,5 +1,6 @@
 import { Params } from '@solidjs/router'
 import { createSignal, Signal } from 'solid-js'
+import { BACKEND_URL } from '../constant'
 
 function createStoredSignal(
   key: string,
@@ -31,5 +32,17 @@ export function updateCardId(searchParams: Params) {
   }
 }
 
+export async function updateCampaign(searchParams: Params) {
+  const cardId = searchParams.card_id
+  // load from backend
+  const data = await fetch(BACKEND_URL + `/api/cardData?cardSlug=${cardId}`)
+  if (data.ok) {
+    const campaignJson = await data.json()
+    setCampaign(campaignJson.cardName)
+    setCardColor(campaignJson.cardColor)
+  }
+}
+
 export const [cardId, setCardId] = createStoredSignal('card_id', '')
-//export const [campaign, setCampaign] = createStoredSignal('campaign', '')
+export const [campaign, setCampaign] = createStoredSignal('campaign', '')
+export const [cardColor, setCardColor] = createStoredSignal('card_color', '')
