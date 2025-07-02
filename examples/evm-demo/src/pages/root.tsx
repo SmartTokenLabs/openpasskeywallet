@@ -45,9 +45,7 @@ export const Root: Component = () => {
           <>
             <div class="text-center mb-8">
               <h2 class="text-2xl font-bold">
-                {campaign()
-                  ? `Collect ${campaign()} card}`
-                  : 'Connect Wallet'}
+                {campaign() ? `Collect ${campaign()} card` : 'Connect Wallet'}
               </h2>
             </div>
             <button
