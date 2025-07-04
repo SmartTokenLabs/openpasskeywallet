@@ -17,57 +17,84 @@ export default function WiFiSetup() {
   const detectCurrentSSID = async () => {
     setIsDetectingSSID(true)
     try {
-      // Try using Network Information API if available
-      if (
-        'connection' in navigator &&
-        'effectiveType' in (navigator as any).connection
-      ) {
-        const connection = (navigator as any).connection
-        console.log('Connection type:', connection.effectiveType)
-      }
+      // Check browser compatibility
+      const userAgent = navigator.userAgent.toLowerCase()
+      const isEdge = userAgent.includes('edge') || userAgent.includes('edg')
+      const isChrome = userAgent.includes('chrome') && !isEdge
+      const isFirefox = userAgent.includes('firefox')
+      const isSafari =
+        userAgent.includes('safari') && !userAgent.includes('chrome')
 
-      // Try using the Network Information API for more details
-      if ('getNetworkInformation' in navigator) {
-        const networkInfo = await (navigator as any).getNetworkInformation()
-        if (networkInfo && networkInfo.ssid) {
-          setSSID(networkInfo.ssid)
-          return
-        }
-      }
+      console.log('Browser detected:', {
+        isEdge,
+        isChrome,
+        isFirefox,
+        isSafari,
+      })
 
-      // Try using the Network Information API (alternative approach)
-      if ('network' in navigator) {
-        const network = (navigator as any).network
-        if (network && network.connection) {
-          const connection = network.connection
-          if (connection.ssid) {
-            setSSID(connection.ssid)
+      // Try to get SSID from clipboard if user has copied it
+      try {
+        const clipboardText = await navigator.clipboard.readText()
+        if (
+          clipboardText &&
+          clipboardText.length > 0 &&
+          clipboardText.length < 50
+        ) {
+          // Check if clipboard content looks like a WiFi SSID
+          const ssidPattern = /^[\s\w.-]+$/
+          if (ssidPattern.test(clipboardText)) {
+            setSSID(clipboardText.trim())
+            toast.success('WiFi network name copied from clipboard!', {
+              position: 'bottom-center',
+            })
             return
           }
         }
+      } catch (clipboardError) {
+        console.log('Clipboard access not available:', clipboardError)
       }
 
-      // If none of the above work, try to get it from the browser's network info
-      // This is a fallback that might work in some browsers
-      const response = await fetch('/api/detect-wifi')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.ssid) {
-          setSSID(data.ssid)
+      // Try Chrome/Chromium Network Information API (very limited support)
+      if (isChrome && 'connection' in navigator) {
+        const connection = (navigator as any).connection
+        if (connection && connection.ssid) {
+          setSSID(connection.ssid)
+          toast.success('WiFi network detected!', { position: 'bottom-center' })
           return
         }
       }
 
-      // If we can't detect it, show a helpful message
-      toast.success(
-        'Could not auto-detect WiFi network. Please enter it manually.',
-        {
-          position: 'bottom-center',
+      // Try Firefox Network Information API (very limited support)
+      if (isFirefox && 'mozConnection' in navigator) {
+        const connection = (navigator as any).mozConnection
+        if (connection && connection.ssid) {
+          setSSID(connection.ssid)
+          toast.success('WiFi network detected!', { position: 'bottom-center' })
+          return
         }
+      }
+
+      // Try Safari Network Information API (very limited support)
+      if (isSafari && 'webkitConnection' in navigator) {
+        const connection = (navigator as any).webkitConnection
+        if (connection && connection.ssid) {
+          setSSID(connection.ssid)
+          toast.success('WiFi network detected!', { position: 'bottom-center' })
+          return
+        }
+      }
+
+      // Most browsers don't support SSID detection for security reasons
+      toast.error(
+        'WiFi SSID auto-detection is not supported in modern browsers for security reasons. Please enter your network name manually.',
+        { position: 'bottom-center' }
       )
+
+      // Show helpful tips
+      console.log('SSID detection not supported - showing manual entry tips')
     } catch (error) {
       console.log('Could not detect WiFi SSID:', error)
-      toast.success('Please enter your WiFi network name manually.', {
+      toast.error('Error detecting WiFi network. Please enter it manually.', {
         position: 'bottom-center',
       })
     } finally {
@@ -215,7 +242,7 @@ export default function WiFiSetup() {
           />
           <button
             type="button"
-            class="btn btn-outline btn-sm"
+            class="btn btn-outline"
             onClick={detectCurrentSSID}
             disabled={isDetectingSSID()}>
             {isDetectingSSID() ? (
@@ -233,9 +260,19 @@ export default function WiFiSetup() {
           onInput={(e) => setWifiPassword(e.currentTarget.value)}
           required
         />
-        <p class="text-sm text-gray-500">
-          Click "Auto" to try to detect your current WiFi network
-        </p>
+        <div class="text-sm text-gray-500 space-y-1">
+          <p>
+            💡 <strong>Tip:</strong> Copy your WiFi network name to clipboard,
+            then click "Auto"
+          </p>
+          <p>
+            📱 <strong>Mobile:</strong> Go to WiFi settings to see your network
+            name
+          </p>
+          <p>
+            💻 <strong>Desktop:</strong> Check your WiFi connection settings
+          </p>
+        </div>
       </div>
 
       <button
