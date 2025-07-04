@@ -11,6 +11,7 @@ import { Redirect } from './pages/redirect'
 import MerchantLogin from './pages/merchant/index'
 import MerchantCreate from './pages/merchant/create'
 import MerchantRedemption from './pages/merchant/redemption'
+import WiFiSetup from './pages/merchant/setup'
 
 export const routes: RouteDefinition[] = [
   {
@@ -56,5 +57,9 @@ export const routes: RouteDefinition[] = [
   {
     path: '/merchant/redemption',
     component: MerchantRedemption,
+  },
+  {
+    path: '/merchant/setup',
+    component: WiFiSetup,
   },
 ]
