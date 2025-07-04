@@ -7,9 +7,14 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const { username, password, ssid, wifiPassword, setupId, baseUrl } = req.body || {}
+  const { username, password, ssid, wifiPassword, setupId, baseUrl } =
+    req.body || {}
   if (!username || !password || !ssid || !wifiPassword || !setupId) {
-    res.status(400).json({ success: false, message: 'Missing required fields: username, password, ssid, wifiPassword, or setupId' })
+    res.status(400).json({
+      success: false,
+      message:
+        'Missing required fields: username, password, ssid, wifiPassword, or setupId',
+    })
     return
   }
 
@@ -21,21 +26,18 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Forward request to backend
-    const response = await fetch(
-      `${process.env.WALLET_PASS_URL}/wifi-setup`,
-      {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ 
-          username, 
-          password, 
-          ssid, 
-          wifiPassword, 
-          setupId, 
-          baseUrl 
-        }),
-      }
-    )
+    const response = await fetch(`${process.env.WALLET_PASS_URL}/wifi-setup`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        username,
+        password,
+        ssid,
+        wifiPassword,
+        setupId,
+        baseUrl,
+      }),
+    })
 
     const data = await response.json()
     res.status(response.status).json(data)
