@@ -6,3 +6,7 @@ export const DEFAULT_ERC20_CONTRACT_ADDRESS =
 export const BACKEND_URL =
   import.meta.env.VITE_PUBLIC_BACKEND_ROOT ||
   'https://openpasskeywallet-ckb-demo.vercel.app'
+
+export const WALLET_PASS_URL =
+  import.meta.env.VITE_PUBLIC_WALLET_PASS_URL ||
+  'https://54-88-67-169.sslip.io:3005'

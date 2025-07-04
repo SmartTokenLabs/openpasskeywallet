@@ -1,6 +1,4 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-//import { createApplePass, servePass } from '../src/passkit'
-import { storePass } from '../src/db'
 import { withCORS } from './cors'
 
 // In-memory map of waiting SSE connections
