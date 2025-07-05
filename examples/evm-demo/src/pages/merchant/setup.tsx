@@ -65,50 +65,6 @@ export default function WiFiSetup() {
     try {
       // Generate a unique ID for this setup request
       const setupId = `XX-wifi-setup-${Math.random().toString(36).slice(2, 11)}`
-      let sseResolved = false
-
-      // Promise that resolves when SSE returns success/error
-      const ssePromise = new Promise<{ status: string; message?: string }>(
-        (resolve, reject) => {
-          const evtSource = new EventSource(
-            BACKEND_URL + `/api/wallet-pass-callback?id=${setupId}`
-          )
-
-          evtSource.addEventListener('message', (event) => {
-            try {
-              const data = JSON.parse(event.data)
-              if (data.status === 'success') {
-                sseResolved = true
-                evtSource.close()
-                resolve(data)
-              } else if (data.status === 'error') {
-                sseResolved = true
-                evtSource.close()
-                reject(new Error(data.message || 'WiFi setup failed'))
-              }
-            } catch (err) {
-              evtSource.close()
-              reject(err)
-            }
-          })
-
-          evtSource.addEventListener('error', (event) => {
-            if (!sseResolved) {
-              evtSource.close()
-              reject(new Error('SSE error or timeout'))
-            }
-          })
-        }
-      )
-
-      // Timeout promise
-      const timeoutPromise = new Promise<{ status: string; message?: string }>(
-        (_, reject) =>
-          setTimeout(
-            () => reject(new Error('Timeout waiting for WiFi setup response')),
-            30_000
-          )
-      )
 
       // Send the WiFi setup request
       const res = await fetch('/api/wifi-setup', {
@@ -124,8 +80,9 @@ export default function WiFiSetup() {
         }),
       })
 
+      const data = await res.json()
+
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
         if (typeof data.message === 'string' && data.message.length > 0) {
           setError(data.message)
         } else {
@@ -135,19 +92,17 @@ export default function WiFiSetup() {
         return
       }
 
-      toast.success('WiFi setup initiated, please wait for pass card...', {
-        position: 'bottom-center',
-      })
-
-      // Wait for either SSE or timeout
-      const result = await Promise.race([ssePromise, timeoutPromise])
-
-      if (result.status === 'success') {
-        toast.success('WiFi setup completed successfully!', {
+      // Check if we got a pass link in the response
+      if (data.success && data.link) {
+        toast.success('WiFi setup completed! Redirecting to pass card...', {
           position: 'bottom-center',
         })
-        // Navigate to merchant create page or wherever appropriate
-        navi('/merchant/create')
+        
+        // Redirect to the pass link
+        window.location.href = data.link
+      } else {
+        setError('WiFi setup failed - no pass link received')
+        toast.error('WiFi setup failed', { position: 'bottom-center' })
       }
     } catch (err: any) {
       const errorMessage = err.message || 'WiFi setup failed'

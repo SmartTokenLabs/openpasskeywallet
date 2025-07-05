@@ -26,21 +26,35 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Forward request to backend
-    const response = await fetch(`${process.env.WALLET_PASS_URL}/merchant-logins/wifi-setup`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        username,
-        password,
-        ssid,
-        wifiPassword,
-        setupId,
-        baseUrl,
-      }),
-    })
+    const response = await fetch(
+      `${process.env.WALLET_PASS_URL}/merchant-logins/wifi-setup`,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          username,
+          password,
+          ssid,
+          wifiPassword,
+          setupId,
+          baseUrl,
+        }),
+      }
+    )
 
     const data = await response.json()
-    res.status(response.status).json(data)
+    // if ok, the data should contain an item "link" with the url to the pass card
+    if (response.ok && data.link) {
+      res.status(response.status).json({
+        success: true,
+        link: data.link,
+      })
+    } else {
+      res.status(response.status).json({
+        success: false,
+        message: 'WiFi setup failed',
+      })
+    }
   } catch (error: any) {
     console.error('WiFi setup error:', error)
     res.status(500).json({
