@@ -26,7 +26,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Forward request to backend
-    const response = await fetch(`${process.env.WALLET_PASS_URL}/wifi-setup`, {
+    const response = await fetch(`${process.env.WALLET_PASS_URL}/merchant-logins/wifi-setup`, {
       method: 'POST',
       headers,
       body: JSON.stringify({

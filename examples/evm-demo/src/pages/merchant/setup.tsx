@@ -44,12 +44,14 @@ export default function WiFiSetup() {
         'No valid WiFi network name found in clipboard. Please copy your network name from your device settings first.',
         { position: 'bottom-center' }
       )
-      
     } catch (error) {
       console.log('Could not paste WiFi SSID:', error)
-      toast.error('Error accessing clipboard. Please enter the network name manually.', {
-        position: 'bottom-center',
-      })
+      toast.error(
+        'Error accessing clipboard. Please enter the network name manually.',
+        {
+          position: 'bottom-center',
+        }
+      )
     } finally {
       setIsDetectingSSID(false)
     }
@@ -69,7 +71,7 @@ export default function WiFiSetup() {
       const ssePromise = new Promise<{ status: string; message?: string }>(
         (resolve, reject) => {
           const evtSource = new EventSource(
-            BACKEND_URL + `/api/wifi-setup-callback?id=${setupId}`
+            BACKEND_URL + `/api/wallet-pass-callback?id=${setupId}`
           )
 
           evtSource.addEventListener('message', (event) => {
@@ -133,7 +135,7 @@ export default function WiFiSetup() {
         return
       }
 
-      toast.success('WiFi setup initiated, please wait...', {
+      toast.success('WiFi setup initiated, please wait for pass card...', {
         position: 'bottom-center',
       })
 
@@ -219,10 +221,12 @@ export default function WiFiSetup() {
             then click "Paste"
           </p>
           <p>
-            📱 <strong>Mobile:</strong> Settings → Wi-Fi → tap your network name → copy
+            📱 <strong>Mobile:</strong> Settings → Wi-Fi → tap your network name
+            → copy
           </p>
           <p>
-            💻 <strong>Desktop:</strong> Network settings → Wi-Fi → copy network name
+            💻 <strong>Desktop:</strong> Network settings → Wi-Fi → copy network
+            name
           </p>
         </div>
       </div>
