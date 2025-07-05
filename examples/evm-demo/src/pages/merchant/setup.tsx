@@ -95,7 +95,7 @@ export default function WiFiSetup() {
       }
 
       // Check if we got a pass link in the response
-      if (data.success && data.message.link) {
+      if (data.success && data.link) {
         toast.success('WiFi setup completed! Redirecting to pass card...', {
           position: 'bottom-center',
         })
@@ -103,7 +103,7 @@ export default function WiFiSetup() {
         console.log(`DUMP: ${JSON.stringify(data)}`)
 
         // Redirect to the pass link
-        window.location.href = data.message.link
+        window.location.href = data.link
       } else {
         setError('WiFi setup failed - no pass link received')
         toast.error('WiFi setup failed', { position: 'bottom-center' })
