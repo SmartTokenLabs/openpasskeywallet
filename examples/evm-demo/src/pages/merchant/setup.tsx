@@ -82,6 +82,8 @@ export default function WiFiSetup() {
 
       const data = await res.json()
 
+      console.log(`DUMP 1: ${JSON.stringify(data)}`)
+
       if (!res.ok) {
         if (typeof data.message === 'string' && data.message.length > 0) {
           setError(data.message)
@@ -93,13 +95,15 @@ export default function WiFiSetup() {
       }
 
       // Check if we got a pass link in the response
-      if (data.success && data.link) {
+      if (data.success && data.message.link) {
         toast.success('WiFi setup completed! Redirecting to pass card...', {
           position: 'bottom-center',
         })
-        
+
+        console.log(`DUMP: ${JSON.stringify(data)}`)
+
         // Redirect to the pass link
-        window.location.href = data.link
+        window.location.href = data.message.link
       } else {
         setError('WiFi setup failed - no pass link received')
         toast.error('WiFi setup failed', { position: 'bottom-center' })
