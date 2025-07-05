@@ -13,25 +13,10 @@ export default function WiFiSetup() {
   const [isDetectingSSID, setIsDetectingSSID] = createSignal(false)
   const navi = useNavigate()
 
-  // Function to detect current WiFi SSID
-  const detectCurrentSSID = async () => {
+  // Function to paste WiFi SSID from clipboard
+  const pasteSSIDFromClipboard = async () => {
     setIsDetectingSSID(true)
     try {
-      // Check browser compatibility
-      const userAgent = navigator.userAgent.toLowerCase()
-      const isEdge = userAgent.includes('edge') || userAgent.includes('edg')
-      const isChrome = userAgent.includes('chrome') && !isEdge
-      const isFirefox = userAgent.includes('firefox')
-      const isSafari =
-        userAgent.includes('safari') && !userAgent.includes('chrome')
-
-      console.log('Browser detected:', {
-        isEdge,
-        isChrome,
-        isFirefox,
-        isSafari,
-      })
-
       // Try to get SSID from clipboard if user has copied it
       try {
         const clipboardText = await navigator.clipboard.readText()
@@ -44,7 +29,7 @@ export default function WiFiSetup() {
           const ssidPattern = /^[\s\w.-]+$/
           if (ssidPattern.test(clipboardText)) {
             setSSID(clipboardText.trim())
-            toast.success('WiFi network name copied from clipboard!', {
+            toast.success('WiFi network name pasted from clipboard!', {
               position: 'bottom-center',
             })
             return
@@ -54,47 +39,15 @@ export default function WiFiSetup() {
         console.log('Clipboard access not available:', clipboardError)
       }
 
-      // Try Chrome/Chromium Network Information API (very limited support)
-      if (isChrome && 'connection' in navigator) {
-        const connection = (navigator as any).connection
-        if (connection && connection.ssid) {
-          setSSID(connection.ssid)
-          toast.success('WiFi network detected!', { position: 'bottom-center' })
-          return
-        }
-      }
-
-      // Try Firefox Network Information API (very limited support)
-      if (isFirefox && 'mozConnection' in navigator) {
-        const connection = (navigator as any).mozConnection
-        if (connection && connection.ssid) {
-          setSSID(connection.ssid)
-          toast.success('WiFi network detected!', { position: 'bottom-center' })
-          return
-        }
-      }
-
-      // Try Safari Network Information API (very limited support)
-      if (isSafari && 'webkitConnection' in navigator) {
-        const connection = (navigator as any).webkitConnection
-        if (connection && connection.ssid) {
-          setSSID(connection.ssid)
-          toast.success('WiFi network detected!', { position: 'bottom-center' })
-          return
-        }
-      }
-
-      // Most browsers don't support SSID detection for security reasons
+      // If clipboard is empty or doesn't contain valid SSID
       toast.error(
-        'WiFi SSID auto-detection is not supported in modern browsers for security reasons. Please enter your network name manually.',
+        'No valid WiFi network name found in clipboard. Please copy your network name from your device settings first.',
         { position: 'bottom-center' }
       )
-
-      // Show helpful tips
-      console.log('SSID detection not supported - showing manual entry tips')
+      
     } catch (error) {
-      console.log('Could not detect WiFi SSID:', error)
-      toast.error('Error detecting WiFi network. Please enter it manually.', {
+      console.log('Could not paste WiFi SSID:', error)
+      toast.error('Error accessing clipboard. Please enter the network name manually.', {
         position: 'bottom-center',
       })
     } finally {
@@ -243,12 +196,12 @@ export default function WiFiSetup() {
           <button
             type="button"
             class="btn btn-outline"
-            onClick={detectCurrentSSID}
+            onClick={pasteSSIDFromClipboard}
             disabled={isDetectingSSID()}>
             {isDetectingSSID() ? (
               <span class="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></span>
             ) : (
-              'Auto'
+              'Paste'
             )}
           </button>
         </div>
@@ -263,14 +216,13 @@ export default function WiFiSetup() {
         <div class="text-sm text-gray-500 space-y-1">
           <p>
             💡 <strong>Tip:</strong> Copy your WiFi network name to clipboard,
-            then click "Auto"
+            then click "Paste"
           </p>
           <p>
-            📱 <strong>Mobile:</strong> Go to WiFi settings to see your network
-            name
+            📱 <strong>Mobile:</strong> Settings → Wi-Fi → tap your network name → copy
           </p>
           <p>
-            💻 <strong>Desktop:</strong> Check your WiFi connection settings
+            💻 <strong>Desktop:</strong> Network settings → Wi-Fi → copy network name
           </p>
         </div>
       </div>
