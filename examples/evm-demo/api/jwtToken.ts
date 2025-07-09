@@ -26,11 +26,6 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       platform: 'google',
       externalId: `${cardId}-${ethAddress}`,
       pass: {
-        logo: {
-          sourceUri: {
-            uri: 'https://pub-17883891749c4dd484fccf6780697b62.r2.dev/metadataemp/passkey-modified.png',
-          },
-        },
       },
     },
   }
