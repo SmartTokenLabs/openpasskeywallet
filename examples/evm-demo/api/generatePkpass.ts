@@ -6,7 +6,8 @@ import { withCORS } from './cors'
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    res.status(405).json({ error: 'Method not allowed' })
+    return
   }
 
   // this function now just calls an API service to create a pass
@@ -149,7 +150,8 @@ API error: {
   if (!response.ok) {
     // Optionally log or throw a more descriptive error
     console.error('API error:', data)
-    return res.status(response.status).json({ error: data.message })
+    res.status(response.status).json({ error: data.message })
+    return
   }
 
   res.status(200).json(data)

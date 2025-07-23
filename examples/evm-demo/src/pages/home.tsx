@@ -77,7 +77,16 @@ function generatePass(
       })
 
       if (!res.ok) {
-        toast.error('Error: ' + res.statusText, { position: 'bottom-center' })
+        // Try to get the error message from the response body
+        let errorMessage = res.statusText
+        try {
+          const errorData = await res.json()
+          errorMessage = errorData.error || errorData.message || res.statusText
+        } catch {
+          // If parsing JSON fails, fall back to statusText
+          errorMessage = res.statusText
+        }
+        toast.error('Error: ' + errorMessage, { position: 'bottom-center' })
         setIsLoadingPass(false)
         return
       }
