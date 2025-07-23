@@ -137,10 +137,19 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
   console.log(`Response: ${JSON.stringify(data)}`)
 
+  /*
+  Response: {"statusCode":500,"error":"Internal Server Error","message":"No Apple Pass has been initialized for this project"}
+API error: {
+  statusCode: 500,
+  error: 'Internal Server Error',
+  message: 'No Apple Pass has been initialized for this project'
+}
+  */
+
   if (!response.ok) {
     // Optionally log or throw a more descriptive error
     console.error('API error:', data)
-    return res.status(response.status).json({ error: data })
+    return res.status(response.status).json({ error: data.message })
   }
 
   res.status(200).json(data)
