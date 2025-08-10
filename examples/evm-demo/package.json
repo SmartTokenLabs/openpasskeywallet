@@ -34,7 +34,7 @@
     "ethers": "5.7.0",
     "passkit-generator": "^3.4.0",
     "solid-js": "1.7.3",
-    "solid-toast": "^0.4.1",
+    "solid-toast": "0.4.0",
     "viem": "^2.31.4"
   }
 }
