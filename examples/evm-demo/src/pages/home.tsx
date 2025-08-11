@@ -28,11 +28,13 @@ function generatePass(
   return async () => {
     setIsLoadingPass(true)
     try {
+      const externalId = `${cardId}-${ethAddress}`
+      
       const url =
         BACKEND_URL +
         (platform === 'google' ? '/api/jwtToken' : '/api/generatePkpass')
 
-      // Call the backend to generate the pass
+      // Call the backend to initiate pass generation
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -54,26 +56,56 @@ function generatePass(
         return
       }
 
-      // Try to get the response data
-      try {
-        const data = await res.json()
-        if (data.fileURL) {
-          toast.success('Pass created successfully!', {
-            position: 'bottom-center',
-          })
-          // Redirect to the generated pass file
-          window.location.href = data.fileURL
-        } else {
-          toast.success('Pass creation initiated, please check your wallet app', {
-            position: 'bottom-center',
-          })
+      toast.success('Pass creation initiated, please wait...', {
+        position: 'bottom-center',
+      })
+
+      // Poll for completion
+      const maxAttempts = 30 // 30 seconds max
+      let attempts = 0
+      
+      const pollForCompletion = async (): Promise<string> => {
+        attempts++
+        
+        try {
+          const statusRes = await fetch(
+            `${BACKEND_URL}/api/wallet-pass-callback?id=${externalId}`
+          )
+          
+          if (statusRes.ok) {
+            const data = await statusRes.json()
+            if (data.fileURL) {
+              return data.fileURL
+            }
+          }
+          
+          if (attempts >= maxAttempts) {
+            throw new Error('Pass generation timed out')
+          }
+          
+          // Wait 1 second before next attempt
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          return pollForCompletion()
+        } catch (error) {
+          if (attempts >= maxAttempts) {
+            throw error
+          }
+          // Wait 1 second before next attempt
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          return pollForCompletion()
         }
-      } catch (parseError) {
-        // If response is not JSON, assume success and show generic message
-        toast.success('Pass creation initiated, please check your wallet app', {
-          position: 'bottom-center',
-        })
       }
+
+      // Start polling
+      const fileURL = await pollForCompletion()
+      
+      toast.success('Pass created successfully!', {
+        position: 'bottom-center',
+      })
+      
+      // Redirect to the generated pass file
+      window.location.href = fileURL
+      
     } catch (err: any) {
       toast.error(err.message || 'Network error', { position: 'bottom-center' })
     } finally {

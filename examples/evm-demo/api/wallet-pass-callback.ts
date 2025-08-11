@@ -1,59 +1,54 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { withCORS } from './cors'
 
-// In-memory map of waiting SSE connections
-const sseClients: Record<string, VercelResponse> = {}
+// In-memory storage for pass results (in production, use a database)
+const passResults: Record<string, { fileURL: string; timestamp: number }> = {}
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
-    // Handle webhook/callback
+    // Handle webhook/callback from external service
     const { id, result, signedMessage } = req.body
 
-    if (!id || !result || !signedMessage) {
+    if (!id || !result || !result.fileURL) {
       return res
         .status(400)
-        .json({ error: 'Missing id, result, or signedMessage' })
+        .json({ error: 'Missing id, result, or fileURL' })
     }
 
-    //await storePass(id, result.id, result.platform, result.fileURL)
-    console.log(`Result: ${JSON.stringify(result)}`)
+    console.log(`Pass completed for ID ${id}:`, result)
 
-    // If a client is waiting for this id, notify via SSE
-    if (sseClients[id]) {
-      sseClients[id].write(
-        `data: ${JSON.stringify({ fileURL: result.fileURL })}\n\n`
-      )
-      sseClients[id].end()
-      delete sseClients[id]
+    // Store the result for the frontend to retrieve
+    passResults[id] = {
+      fileURL: result.fileURL,
+      timestamp: Date.now()
     }
 
-    return res.status(200).send()
+    // Clean up old results (older than 1 hour)
+    const oneHourAgo = Date.now() - (60 * 60 * 1000)
+    Object.keys(passResults).forEach(key => {
+      if (passResults[key].timestamp < oneHourAgo) {
+        delete passResults[key]
+      }
+    })
+
+    return res.status(200).json({ success: true })
   }
 
   if (req.method === 'GET') {
-    // For SSE: /api/wallet-pass-callback?id=EXTERNAL_ID
+    // For checking pass status: /api/wallet-pass-callback?id=EXTERNAL_ID
     const { id } = req.query
     if (!id || typeof id !== 'string') {
       return res.status(400).json({ error: 'Missing id in query' })
     }
 
-    // Set SSE headers
-    res.setHeader('Content-Type', 'text/event-stream')
-    res.setHeader('Cache-Control', 'no-cache')
-    res.setHeader('Connection', 'keep-alive')
-
-    // Keep the connection open
-    res.write(': connected\n\n')
-
-    // Store the response object for this id
-    sseClients[id] = res
-
-    // Clean up if the client disconnects
-    req.on('close', () => {
-      delete sseClients[id]
-    })
-    // Do not end the response here!
-    return
+    const result = passResults[id]
+    if (result) {
+      // Return the result and clean it up
+      delete passResults[id]
+      return res.status(200).json({ fileURL: result.fileURL })
+    } else {
+      return res.status(404).json({ error: 'Pass not ready yet' })
+    }
   }
 
   // Method not allowed
