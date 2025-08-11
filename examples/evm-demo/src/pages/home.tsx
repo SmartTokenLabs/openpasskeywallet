@@ -28,48 +28,11 @@ function generatePass(
   return async () => {
     setIsLoadingPass(true)
     try {
-      const externalId = `${cardId}-${ethAddress}`
-      let sseResolved = false
-
-      // Promise that resolves when SSE returns fileURL
-      const ssePromise = new Promise((resolve, reject) => {
-        const evtSource = new EventSource(
-          BACKEND_URL + `/api/wallet-pass-callback?id=${externalId}`
-        )
-
-        evtSource.addEventListener('message', (event) => {
-          try {
-            const data = JSON.parse(event.data)
-            if (data.fileURL) {
-              sseResolved = true
-              evtSource.close()
-              resolve(data.fileURL)
-            }
-          } catch (err) {
-            evtSource.close()
-            reject(err)
-          }
-        })
-
-        evtSource.addEventListener('error', (event) => {
-          if (!sseResolved) {
-            evtSource.close()
-            reject(new Error('SSE error or timeout'))
-          }
-        })
-      })
-
-      // Timeout promise
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout waiting for pass')), 10_000)
-      )
-
       const url =
         BACKEND_URL +
         (platform === 'google' ? '/api/jwtToken' : '/api/generatePkpass')
 
-      // Trigger the backend to start the pass creation process
-
+      // Call the backend to generate the pass
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -91,13 +54,26 @@ function generatePass(
         return
       }
 
-      toast.success('Pass created successfully, please wait', {
-        position: 'bottom-center',
-      })
-
-      // Wait for either SSE or timeout
-      const fileURL = await Promise.race([ssePromise, timeoutPromise])
-      window.location.href = fileURL as string
+      // Try to get the response data
+      try {
+        const data = await res.json()
+        if (data.fileURL) {
+          toast.success('Pass created successfully!', {
+            position: 'bottom-center',
+          })
+          // Redirect to the generated pass file
+          window.location.href = data.fileURL
+        } else {
+          toast.success('Pass creation initiated, please check your wallet app', {
+            position: 'bottom-center',
+          })
+        }
+      } catch (parseError) {
+        // If response is not JSON, assume success and show generic message
+        toast.success('Pass creation initiated, please check your wallet app', {
+          position: 'bottom-center',
+        })
+      }
     } catch (err: any) {
       toast.error(err.message || 'Network error', { position: 'bottom-center' })
     } finally {
